@@ -54,7 +54,6 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
   const dataIndexRef = useRef<number>(0); // Change this line
 
   useEffect(() => {
-    if (!ready) return;
     // Load data from local storage on component mount
     const storedData = localStorage.getItem(
       `minerStatusData-${data.hostname}-${data.stratumUser}`
