@@ -140,8 +140,6 @@ const HiveDashboard: React.FC = () => {
     }
   };
 
-  if (hiveData.length === 0) return <div>Loading Miner data...</div>;
-
   return (
     <div>
       {/* Display errors for any statusQueries with isError */}
