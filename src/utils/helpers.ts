@@ -16,3 +16,11 @@ export function parseDifficulty(diffString: string): number {
 
     return numericValue * (multipliers[suffix.toUpperCase()] || 1);
   }
+
+export const calculateExpectedHashRate = (
+  frequency: number,
+  smallCoreCount: number,
+  asicCount: number
+): number => {
+  return Math.floor(frequency * ((smallCoreCount * asicCount) / 1000));
+};

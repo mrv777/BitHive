@@ -7,6 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { calculateExpectedHashRate } from "@/utils/helpers";
 
 // Add this utility function at the top of the file
 const formatDifficulty = (value: number): string => {
@@ -78,8 +79,10 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
     };
 
     // Calculate expected hash rate
-    const calculatedExpectedHashRate = Math.floor(
-      data.frequency * ((data.smallCoreCount * data.asicCount) / 1000)
+    const calculatedExpectedHashRate = calculateExpectedHashRate(
+      data.frequency,
+      data.smallCoreCount,
+      data.asicCount
     );
     setExpectedHashRate(calculatedExpectedHashRate);
 
@@ -207,7 +210,7 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
               className={`stat-value ${
                 data.temp >= 68
                   ? "text-red-500"
-                  : data.temp >= 60
+                  : data.temp >= 62
                   ? "text-yellow-500"
                   : "text-green-500"
               }`}
@@ -217,7 +220,7 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
             <div className="stat-desc">
               {data.temp >= 68
                 ? "Warning: Overheating"
-                : data.temp >= 60
+                : data.temp >= 62
                 ? "Caution"
                 : "Healthy"}
             </div>
