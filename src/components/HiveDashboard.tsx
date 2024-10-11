@@ -124,7 +124,8 @@ const HiveDashboard: React.FC = () => {
           updateHiveData(updatedHive);
           await queryClient.invalidateQueries();
           showToast(`Miner ${newIp} added successfully`, "success");
-        } catch (error) {
+        } catch (error: unknown) {
+          console.error(`Error adding miner ${newIp}:`, error);
           showToast(`Failed to add miner ${newIp}`, "error");
         }
       }
@@ -139,17 +140,20 @@ const HiveDashboard: React.FC = () => {
       // Refetch hive data
       await queryClient.invalidateQueries();
       showToast(`Miner ${ip} removed successfully`, "success");
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error(`Error removing miner ${ip}:`, error);
       showToast(`Failed to remove miner ${ip}`, "error");
     }
   };
 
-  const [toasts, setToasts] = useState<Array<{ message: string; type: "success" | "error" }>>([]);
+  const [toasts, setToasts] = useState<
+    { message: string; type: "success" | "error" }[]
+  >([]);
 
   const showToast = (message: string, type: "success" | "error") => {
-    setToasts(prevToasts => [...prevToasts, { message, type }]);
+    setToasts((prevToasts) => [...prevToasts, { message, type }]);
     setTimeout(() => {
-      setToasts(prevToasts => prevToasts.slice(1));
+      setToasts((prevToasts) => prevToasts.slice(1));
     }, 5000);
   };
 
