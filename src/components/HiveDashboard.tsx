@@ -92,7 +92,9 @@ const HiveDashboard: React.FC = () => {
 
     combined.hashRate = combined.hashRate > 0 ? combined.hashRate : null;
 
-    const devicesWithData = statusQueries.filter((query: any) => query.data).length;
+    const devicesWithData = statusQueries.filter(
+      (query: any) => query.data
+    ).length;
     const devicesWithoutData = hiveData.length - devicesWithData;
 
     return { combinedData: combined, devicesWithData, devicesWithoutData };
@@ -121,8 +123,9 @@ const HiveDashboard: React.FC = () => {
           const updatedHive = [...hiveData, newIp];
           updateHiveData(updatedHive);
           await queryClient.invalidateQueries();
+          showToast(`Miner ${newIp} added successfully`, "success");
         } catch (error) {
-          console.error("Failed to add to hive:", error);
+          showToast(`Failed to add miner ${newIp}`, "error");
         }
       }
     },
@@ -135,9 +138,19 @@ const HiveDashboard: React.FC = () => {
       updateHiveData(updatedHive);
       // Refetch hive data
       await queryClient.invalidateQueries();
+      showToast(`Miner ${ip} removed successfully`, "success");
     } catch (error) {
-      console.error("Failed to remove from hive:", error);
+      showToast(`Failed to remove miner ${ip}`, "error");
     }
+  };
+
+  const [toasts, setToasts] = useState<Array<{ message: string; type: "success" | "error" }>>([]);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToasts(prevToasts => [...prevToasts, { message, type }]);
+    setTimeout(() => {
+      setToasts(prevToasts => prevToasts.slice(1));
+    }, 5000);
   };
 
   return (
@@ -200,9 +213,9 @@ const HiveDashboard: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={isVisible}
-                    onChange={() =>
-                      { toggleColumn(column as keyof typeof visibleColumns); }
-                    }
+                    onChange={() => {
+                      toggleColumn(column as keyof typeof visibleColumns);
+                    }}
                     className="checkbox"
                   />
                 </label>
@@ -223,6 +236,13 @@ const HiveDashboard: React.FC = () => {
 
       <div className="mt-4">
         <AddMinerForm onSubmit={addMiner} />
+      </div>
+      <div className="toast toast-top toast-end">
+        {toasts.map((toast, index) => (
+          <div key={index} className={`alert alert-${toast.type}`}>
+            <span>{toast.message}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
