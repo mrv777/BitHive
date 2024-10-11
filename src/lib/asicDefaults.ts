@@ -95,13 +95,15 @@ export const coreVoltageOptions: Record<string, DropdownOption[]> = {
 };
 
 export function getDefaultFrequency(model: string): number {
-  const options = frequencyOptions[model];
+  const options = frequencyOptions[model] as DropdownOption[] | undefined;
+  if (!options) return 0;
   const defaultOption = options.find(option => option.name.includes('default'));
-  return defaultOption ? defaultOption.value : options[0]?.value || 0;
+  return defaultOption ? defaultOption.value : options[0]?.value ?? 0;
 }
 
 export function getDefaultCoreVoltage(model: string): number {
-  const options = coreVoltageOptions[model];
+  const options = coreVoltageOptions[model] as DropdownOption[] | undefined;
+  if (!options) return 0;
   const defaultOption = options.find(option => option.name.includes('default'));
-  return defaultOption ? defaultOption.value : options[0]?.value || 0;
+  return defaultOption ? defaultOption.value : options[0]?.value ?? 0;
 }
