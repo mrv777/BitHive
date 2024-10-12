@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { UseQueryResult } from "@tanstack/react-query";
-import { calculateExpectedHashRate } from "@/utils/helpers";
+import { calculateExpectedHashRate, parseDifficulty } from "@/utils/helpers";
 import { getDefaultFrequency } from "@/lib/asicDefaults";
 
 interface MinerTableProps {
@@ -30,37 +30,73 @@ const MinerTable: React.FC<MinerTableProps> = ({
   devicesWithoutData,
   removeFromHive,
 }) => {
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+  };
+
+  const sortedData = React.useMemo(() => {
+    if (!sortColumn) return statusQueries.map((query, index) => ({ query, ip: hiveData[index] }));
+
+    return [...statusQueries]
+      .map((query, index) => ({ query, ip: hiveData[index] }))
+      .sort((a, b) => {
+        let aValue = a.query.data?.[sortColumn] ?? '';
+        let bValue = b.query.data?.[sortColumn] ?? '';
+
+        if (sortColumn === 'ip') {
+          aValue = a.ip;
+          bValue = b.ip;
+        } else if (sortColumn === 'bestDiff') {
+          aValue = parseDifficulty(aValue);
+          bValue = parseDifficulty(bValue);
+        }
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [statusQueries, hiveData, sortColumn, sortDirection]);
+
+  const SortableHeader: React.FC<{ column: string; label: string }> = ({ column, label }) => (
+    <th
+      className={`${visibleColumns[column as keyof typeof visibleColumns] ? "" : "hidden"} cursor-pointer`}
+      onClick={() => handleSort(column)}
+    >
+      {label}
+      {sortColumn === column && (
+        <span className="ml-1">{sortDirection === 'asc' ? '▲' : '▼'}</span>
+      )}
+    </th>
+  );
+
   return (
     <table className="table table-compact">
       <thead>
         <tr>
-          <th className={visibleColumns.ip ? "" : "hidden"}>
-            Devices ({devicesWithData}/{hiveData.length})
-            {devicesWithoutData > 0 && (
-              <span className="text-xs text-red-500 ml-1">
-                ({devicesWithoutData} offline)
-              </span>
-            )}
-          </th>
-          <th className={visibleColumns.asicModel ? "" : "hidden"}>
-            ASIC Model
-          </th>
-          <th className={visibleColumns.bestDiff ? "" : "hidden"}>Best Diff</th>
-          <th className={visibleColumns.hashRate ? "" : "hidden"}>Hash Rate</th>
-          <th className={visibleColumns.temp ? "" : "hidden"}>Temp</th>
-          <th className={visibleColumns.frequency ? "" : "hidden"}>
-            Frequency
-          </th>
-          <th className={visibleColumns.voltage ? "" : "hidden"}>Voltage</th>
-          <th className={visibleColumns.power ? "" : "hidden"}>Power</th>
+          <SortableHeader column="ip" label={`Devices (${devicesWithData}/${hiveData.length})`} />
+          <SortableHeader column="asicModel" label="ASIC Model" />
+          <SortableHeader column="bestDiff" label="Best Diff" />
+          <SortableHeader column="hashRate" label="Hash Rate" />
+          <SortableHeader column="temp" label="Temp" />
+          <SortableHeader column="frequency" label="Frequency" />
+          <SortableHeader column="voltage" label="Voltage" />
+          <SortableHeader column="power" label="Power" />
           <th className={visibleColumns.delete ? "" : "hidden"}>Actions</th>
         </tr>
       </thead>
       <tbody>
-        {statusQueries.map((query: any, index: number) => (
-          <tr key={hiveData[index]}>
+        {sortedData.map(({ query, ip }) => (
+          <tr key={ip}>
             <td className={visibleColumns.ip ? "" : "hidden"}>
-              <div>{hiveData[index]}</div>
+              <div>{ip}</div>
               <div className="text-sm text-gray-500">
                 ({query.data?.hostname || "N/A"})
               </div>
@@ -71,9 +107,9 @@ const MinerTable: React.FC<MinerTableProps> = ({
             <td className={visibleColumns.bestDiff ? "" : "hidden"}>
               {query.data ? (
                 <>
-                  <div>{query.data.bestSessionDiff || "N/A"}</div>
-                  <div className="tooltip cursor-help text-sm text-gray-500" data-tip="All Time">
-                    ({query.data.bestDiff || "N/A"})
+                  <div>{query.data.bestDiff || "N/A"}</div>
+                  <div className="tooltip cursor-help text-sm text-gray-500" data-tip="This Session's Best Difficulty">
+                    ({query.data.bestSessionDiff || "N/A"})
                   </div>
                 </>
               ) : (
@@ -156,7 +192,7 @@ const MinerTable: React.FC<MinerTableProps> = ({
             <td className={visibleColumns.delete ? "" : "hidden"}>
               <button
                 onClick={() => {
-                  removeFromHive(hiveData[index]);
+                  removeFromHive(ip);
                 }}
                 className="btn btn-error btn-xs"
               >
