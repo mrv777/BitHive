@@ -25,7 +25,7 @@ const HiveDashboard: React.FC = () => {
     })),
   });
 
-  const { combinedData, devicesWithData, devicesWithoutData } = useMemo(() => {
+  const { combinedData, devicesWithData } = useMemo(() => {
     const allSettled = statusQueries.every((query: any) => !query.isFetching);
     const anyError = statusQueries.some((query: any) => query.isError);
 
@@ -95,9 +95,8 @@ const HiveDashboard: React.FC = () => {
     const devicesWithData = statusQueries.filter(
       (query: any) => query.data
     ).length;
-    const devicesWithoutData = hiveData.length - devicesWithData;
 
-    return { combinedData: combined, devicesWithData, devicesWithoutData };
+    return { combinedData: combined, devicesWithData };
   }, [statusQueries, hiveData]);
 
   const [visibleColumns, setVisibleColumns] = useState({
@@ -235,7 +234,6 @@ const HiveDashboard: React.FC = () => {
         visibleColumns={visibleColumns}
         removeFromHive={removeFromHive}
         devicesWithData={devicesWithData}
-        devicesWithoutData={devicesWithoutData}
       />
 
       <div className="mt-4">

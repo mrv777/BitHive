@@ -19,7 +19,6 @@ interface MinerTableProps {
   };
   removeFromHive: (ip: string) => void;
   devicesWithData: number;
-  devicesWithoutData: number;
 }
 
 const MinerTable: React.FC<MinerTableProps> = ({
@@ -27,7 +26,6 @@ const MinerTable: React.FC<MinerTableProps> = ({
   hiveData,
   visibleColumns,
   devicesWithData,
-  devicesWithoutData,
   removeFromHive,
 }) => {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -68,7 +66,7 @@ const MinerTable: React.FC<MinerTableProps> = ({
   const SortableHeader: React.FC<{ column: string; label: string }> = ({ column, label }) => (
     <th
       className={`${visibleColumns[column as keyof typeof visibleColumns] ? "" : "hidden"} cursor-pointer`}
-      onClick={() => handleSort(column)}
+      onClick={() => { handleSort(column); }}
     >
       {label}
       {sortColumn === column && (
