@@ -15,7 +15,7 @@ interface MinerTableProps {
     frequency: boolean;
     voltage: boolean;
     power: boolean;
-    delete: boolean;
+    actions: boolean;
   };
   removeFromHive: (ip: string) => void;
   devicesWithData: number;
@@ -87,7 +87,7 @@ const MinerTable: React.FC<MinerTableProps> = ({
           <SortableHeader column="frequency" label="Frequency" />
           <SortableHeader column="voltage" label="Voltage" />
           <SortableHeader column="power" label="Power" />
-          <th className={visibleColumns.delete ? "" : "hidden"}>Actions</th>
+          <th className={visibleColumns.actions ? "" : "hidden"}>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -187,7 +187,7 @@ const MinerTable: React.FC<MinerTableProps> = ({
                 </>
                 : "N/A"}
             </td>
-            <td className={visibleColumns.delete ? "" : "hidden"}>
+            <td className={visibleColumns.actions ? "" : "hidden"}>
               <button
                 onClick={() => {
                   removeFromHive(ip);

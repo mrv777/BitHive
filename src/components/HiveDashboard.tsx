@@ -108,7 +108,7 @@ const HiveDashboard: React.FC = () => {
     frequency: true,
     voltage: true,
     power: true,
-    delete: true,
+    actions: true,
   });
 
   const toggleColumn = (column: keyof typeof visibleColumns) => {
@@ -199,7 +199,7 @@ const HiveDashboard: React.FC = () => {
           <p>Waiting for data from all miners...</p>
         </div>
       )}
-      <div className="divider" />
+      <div className="flex mt-2 gap-2">
       <div className="flex justify-start">
         <div className="dropdown mb-4">
           <label tabIndex={0} className="btn m-1">
@@ -211,21 +211,25 @@ const HiveDashboard: React.FC = () => {
           >
             {Object.entries(visibleColumns).map(([column, isVisible]) => (
               <li key={column}>
-                <label className="label cursor-pointer">
-                  <span className="label-text capitalize">{column}</span>
-                  <input
-                    type="checkbox"
-                    checked={isVisible}
-                    onChange={() => {
-                      toggleColumn(column as keyof typeof visibleColumns);
-                    }}
-                    className="checkbox"
-                  />
-                </label>
+                {column !== 'actions' ? (
+                  <label className="label cursor-pointer">
+                    <span className="label-text capitalize">{column}</span>
+                    <input
+                      type="checkbox"
+                      checked={isVisible}
+                      onChange={() => {
+                        toggleColumn(column as keyof typeof visibleColumns);
+                      }}
+                      className="checkbox"
+                    />
+                  </label>
+                ) : null}
               </li>
             ))}
           </ul>
         </div>
+      </div>
+      <div className="divider flex-grow" />
       </div>
 
       <MinerTable
