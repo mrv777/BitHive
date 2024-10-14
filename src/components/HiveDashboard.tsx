@@ -245,7 +245,12 @@ const HiveDashboard: React.FC = () => {
       </div>
       <div className="toast toast-top toast-end">
         {toasts.map((toast, index) => (
-          <div key={index} className={`alert alert-${toast.type}`}>
+          <div
+            key={index}
+            className={`alert ${
+              toast.type === 'success' ? 'alert-success' : 'alert-error'
+            }`}
+          >
             <span>{toast.message}</span>
           </div>
         ))}

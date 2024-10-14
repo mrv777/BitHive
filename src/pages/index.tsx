@@ -1,9 +1,7 @@
 import Header from "@/components/Header"
 import HiveDashboard from "@/components/HiveDashboard"
-import { useGlobalShortcut } from "@/hooks/tauri/shortcuts"
 // import { invoke } from "@tauri-apps/api/tauri"
 import type { NextPage } from "next"
-import { useCallback } from "react"
 
 const Home: NextPage = () => {
   // const [buttonDesc, setButtonDesc] = useState<string>(
@@ -19,10 +17,10 @@ const Home: NextPage = () => {
   //     })
   // }
 
-  const shortcutHandler = useCallback(() => {
-    console.log("Ctrl+P was pressed!")
-  }, [])
-  useGlobalShortcut("CommandOrControl+P", shortcutHandler)
+  // const shortcutHandler = useCallback(() => {
+  //   console.log("Ctrl+P was pressed!")
+  // }, [])
+  // useGlobalShortcut("CommandOrControl+P", shortcutHandler)
 
   return (
     <div className="flex min-h-screen flex-col">

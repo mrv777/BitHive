@@ -1,66 +1,39 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "Bithive",
+  "version": "0.2.0",
+  "identifier": "com.bithive.app",
   "build": {
-    "beforeBuildCommand": "pnpm next-build",
+    "beforeBuildCommand": "pnpm run next-build",
     "beforeDevCommand": "pnpm next-start",
-    "devPath": "http://localhost:3000",
-    "distDir": "../out"
+    "devUrl": "http://localhost:3000",
+    "frontendDist": "../out"
   },
-  "package": {
-    "productName": "BitHive",
-    "version": "0.1.4"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.bithive.app",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
-    },
+  "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "BitHive",
-        "width": 1280,
-        "height": 800
+        "title": "Bithive",
+        "width": 800,
+        "height": 600,
+        "transparent": false,
+        "decorations": true,
+        "fullscreen": false
       }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
     ]
   }
 }

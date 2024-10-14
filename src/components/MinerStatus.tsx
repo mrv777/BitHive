@@ -57,14 +57,14 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
   useEffect(() => {
     // Load data from local storage on component mount
     const storedData = localStorage.getItem(
-      `minerStatusData-${data.hostname}-${data.stratumUser}`
+      `minerStatusData-${data.hostname}`
     );
     if (storedData) {
       const parsedData = JSON.parse(storedData);
       setTimeSeriesData(parsedData);
       dataIndexRef.current = parsedData.length; // Update this line
     }
-  }, []);
+  }, [data.hostname, data.stratumUser]);
 
   useEffect(() => {
     if (!ready) return;
@@ -95,7 +95,7 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
 
       // Save to local storage
       localStorage.setItem(
-        `minerStatusData-${data.hostname}-${data.stratumUser}`,
+        `minerStatusData-${data.hostname}`,
         JSON.stringify(
           filteredData.map((point) => ({
             timestamp: point.timestamp,

@@ -1,23 +1,23 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+name = "bithive"
+version = "0.2.0"
+description = "BitHive Dashboard"
+authors = ["MrV"]
 license = ""
 repository = ""
-default-run = "app"
 edition = "2021"
-rust-version = "1.66"
+rust-version = "1.81"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5", features = [] }
+tauri-build = { version = "2.0.0", features = [] }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.8", features = ["api-all"] }
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-shell = "2.0.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 
 [features]
 # by default Tauri runs in production mode
@@ -26,3 +26,10 @@ default = [ "custom-protocol" ]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = [ "tauri/custom-protocol" ]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "2"
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
