@@ -64,7 +64,7 @@ const MinerStatus: React.FC<MinerStatusProps> = ({ data, ready }) => {
       setTimeSeriesData(parsedData);
       dataIndexRef.current = parsedData.length; // Update this line
     }
-  }, [data.hostname, data.stratumUser]);
+  }, [data.hostname]);
 
   useEffect(() => {
     if (!ready) return;
