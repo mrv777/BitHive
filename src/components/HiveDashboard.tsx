@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import MinerStatus from "./MinerStatus";
@@ -203,7 +203,7 @@ const HiveDashboard: React.FC = () => {
               bestDiff: combinedData.bestDiff,
               bestSessionDiff: combinedData.bestSessionDiff,
             }}
-            ready={currentlyFetching.current == false}
+            ready={!currentlyFetching.current}
           />
         </div>
       ) : hiveData.length === 0 ? (

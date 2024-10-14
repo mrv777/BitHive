@@ -138,7 +138,7 @@ const MinerTable: React.FC<MinerTableProps> = ({
               }`}
             >
               <div>{query.data ? `${query.data.temp}°C` : "N/A"}</div>
-              {!query?.data ? "" : query.data?.temp >= 68
+              {!query.data ? "" : query.data?.temp >= 68
                 ? "Warning: Overheating"
                 : query.data?.temp >= 62
                 ? "Caution"
@@ -166,7 +166,7 @@ const MinerTable: React.FC<MinerTableProps> = ({
                   ? `${(query.data?.voltage / 1000).toFixed(2)}V`
                 : "N/A"}
               </div>
-              {!query?.data ? "" : query.data?.voltage > 4900
+              {!query.data ? "" : query.data?.voltage > 4900
                 ? "Healthy"
                 : query.data?.voltage > 4800
                 ? "Caution"

@@ -43,7 +43,7 @@ const themes = [
 
 const Header: React.FC = () => {
   const queryClient = useQueryClient();
-  const { lastFetchTime, currentlyFetching, setCurrentlyFetching } =
+  const { lastFetchTime, currentlyFetching } =
     useFetchContext();
   const [theme, setTheme] = useState<string>("dark");
   const [progress, setProgress] = useState(0);
@@ -69,10 +69,13 @@ const Header: React.FC = () => {
         ((rawRemainingTime > 0 && rawRemainingTime <= 100) ||
           rawRemainingTime < -10000) &&
         !queryClient.isFetching() &&
-        currentlyFetching.current == false
+        !currentlyFetching.current
       ) {
         currentlyFetching.current = true;
-        queryClient.invalidateQueries();
+        queryClient.invalidateQueries().catch((error: unknown) => {
+          console.error("Failed to invalidate queries:", error);
+          currentlyFetching.current = false; // Reset the fetching state on error
+        });
       }
     }, 100); // Update frequently for smoother animation
 
