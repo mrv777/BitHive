@@ -138,8 +138,8 @@ const HiveDashboard: React.FC = () => {
         try {
           const updatedHive = [...hiveData, newIp];
           updateHiveData(updatedHive);
-          await queryClient.invalidateQueries();
           showToast(`Miner ${newIp} added successfully`, "success");
+          await queryClient.invalidateQueries();
         } catch (error: unknown) {
           console.error(`Error adding miner ${newIp}:`, error);
           showToast(`Failed to add miner ${newIp}`, "error");
@@ -153,9 +153,8 @@ const HiveDashboard: React.FC = () => {
     try {
       const updatedHive = hiveData.filter((member: string) => member !== ip);
       updateHiveData(updatedHive);
-      // Refetch hive data
-      await queryClient.invalidateQueries();
       showToast(`Miner ${ip} removed successfully`, "success");
+      await queryClient.invalidateQueries();
     } catch (error: unknown) {
       console.error(`Error removing miner ${ip}:`, error);
       showToast(`Failed to remove miner ${ip}`, "error");
