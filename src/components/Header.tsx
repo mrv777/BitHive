@@ -1,70 +1,137 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import logo from '../images/logo.png';
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import logo from "../images/logo.png";
+import { useFetchContext } from "../context/FetchContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 const themes = [
-  "dark", "light", "cupcake", "bumblebee", "emerald", "corporate", "synthwave", 
-  "retro", "cyberpunk", "valentine", "halloween", "garden", "forest", "aqua", 
-  "lofi", "pastel", "fantasy", "wireframe", "black", "luxury", "dracula", "cmyk", 
-  "autumn", "business", "acid", "lemonade", "night", "coffee", "winter", "dim", "nord", "sunset"
+  "dark",
+  "light",
+  "cupcake",
+  "bumblebee",
+  "emerald",
+  "corporate",
+  "synthwave",
+  "retro",
+  "cyberpunk",
+  "valentine",
+  "halloween",
+  "garden",
+  "forest",
+  "aqua",
+  "lofi",
+  "pastel",
+  "fantasy",
+  "wireframe",
+  "black",
+  "luxury",
+  "dracula",
+  "cmyk",
+  "autumn",
+  "business",
+  "acid",
+  "lemonade",
+  "night",
+  "coffee",
+  "winter",
+  "dim",
+  "nord",
+  "sunset",
 ];
 
-interface HeaderProps {
-  networkStatus: {
-    wifiStatus: string;
-    ssid: string;
-    hostname: string;
-  };
-  onSettingsClick: (page: string) => void;
-}
-
-const Header: React.FC<HeaderProps> = () => {
-  const [theme, setTheme] = useState<string>('dark');
+const Header: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { lastFetchTime, currentlyFetching, setCurrentlyFetching } =
+    useFetchContext();
+  const [theme, setTheme] = useState<string>("dark");
+  const [progress, setProgress] = useState(0);
+  const refetchInterval = 10000; // 10 seconds
 
   useEffect(() => {
     // Load theme from localStorage on initial render
-    const storedTheme = localStorage.getItem('theme');
+    const storedTheme = localStorage.getItem("theme");
     if (storedTheme) {
       setTheme(storedTheme);
     }
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const elapsedTime = Date.now() - lastFetchTime;
+      const rawRemainingTime = refetchInterval - elapsedTime;
+      const remainingTime = Math.max(0, rawRemainingTime);
+      setProgress(((refetchInterval - remainingTime) / refetchInterval) * 100);
+      if (
+        // if the remaining time is less than 100ms or less than -10000ms, invalidate the queries
+        // this is a bandaid fix to prevent extra renders while having a fallback if really long
+        ((rawRemainingTime > 0 && rawRemainingTime <= 100) ||
+          rawRemainingTime < -10000) &&
+        !queryClient.isFetching() &&
+        currentlyFetching.current == false
+      ) {
+        currentlyFetching.current = true;
+        queryClient.invalidateQueries();
+      }
+    }, 100); // Update frequently for smoother animation
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [lastFetchTime]);
+
   const updateTheme = (theme: string) => {
     setTheme(theme);
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
   };
 
   const resetCharts = () => {
-    const apiUrl = localStorage.getItem('bitaxeApiUrl');
-    const currentTheme = localStorage.getItem('theme');
-    const miners = localStorage.getItem('hiveData');
+    const apiUrl = localStorage.getItem("bitaxeApiUrl");
+    const currentTheme = localStorage.getItem("theme");
+    const miners = localStorage.getItem("hiveData");
     localStorage.clear();
-    if (apiUrl) localStorage.setItem('bitaxeApiUrl', apiUrl);
-    if (currentTheme) localStorage.setItem('theme', currentTheme);
-    if (miners) localStorage.setItem('hiveData', miners);
+    if (apiUrl) localStorage.setItem("bitaxeApiUrl", apiUrl);
+    if (currentTheme) localStorage.setItem("theme", currentTheme);
+    if (miners) localStorage.setItem("hiveData", miners);
     window.location.reload();
-  }
+  };
 
   const resetLocalStorage = () => {
-    const apiUrl = localStorage.getItem('bitaxeApiUrl');
-    const currentTheme = localStorage.getItem('theme');
+    const apiUrl = localStorage.getItem("bitaxeApiUrl");
+    const currentTheme = localStorage.getItem("theme");
     localStorage.clear();
-    if (apiUrl) localStorage.setItem('bitaxeApiUrl', apiUrl);
-    if (currentTheme) localStorage.setItem('theme', currentTheme);
+    if (apiUrl) localStorage.setItem("bitaxeApiUrl", apiUrl);
+    if (currentTheme) localStorage.setItem("theme", currentTheme);
     window.location.reload();
   };
 
   return (
     <header className="navbar bg-base-300 shadow-lg">
-      <div className="flex-1">
-        <a className="btn btn-ghost">
-          <Image src={logo} alt="BitHive Logo" className="h-11 w-11" />
-        </a>
+      <div className="flex-1 pl-2">
+        <Image src={logo} alt="BitHive Logo" className="h-11 w-11" />
       </div>
       <div className="flex-none gap-2">
+        <div
+          className="tooltip tooltip-bottom"
+          data-tip="Time until next refresh"
+        >
+          <div
+            className={`radial-progress ${
+              progress > 90 ? "text-primary animate-pulse" : "text-success"
+            }`}
+            style={
+              {
+                "--value": progress,
+                "--size": "2.5rem",
+                "--thickness": "3px",
+              } as React.CSSProperties
+            }
+          >
+            {Math.ceil((100 - progress) / 10)}
+          </div>
+        </div>
         {/* <div className="tooltip tooltip-bottom" data-tip={`Connected as ${networkStatus.hostname} on ${networkStatus.ssid}`}>
           <div className={`indicator ${isConnected ? 'text-success' : 'text-error'}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,9 +163,20 @@ const Header: React.FC<HeaderProps> = () => {
         <div className="dropdown dropdown-end">
           <label tabIndex={0} className="btn m-1">
             Theme
-            <svg width="12px" height="12px" className="h-2 w-2 fill-current opacity-60 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048"><path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path></svg>
+            <svg
+              width="12px"
+              height="12px"
+              className="h-2 w-2 fill-current opacity-60 inline-block"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 2048 2048"
+            >
+              <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+            </svg>
           </label>
-          <ul tabIndex={0} className="dropdown-content z-[1] p-2 shadow-2xl bg-base-200 rounded-box w-52 max-h-96 overflow-y-auto">
+          <ul
+            tabIndex={0}
+            className="dropdown-content z-[1] p-2 shadow-2xl bg-base-200 rounded-box w-52 max-h-96 overflow-y-auto"
+          >
             {themes.map((t) => (
               <li key={t}>
                 <input
@@ -108,20 +186,52 @@ const Header: React.FC<HeaderProps> = () => {
                   aria-label={t}
                   value={t}
                   checked={theme === t}
-                  onChange={() => { updateTheme(t); }}
+                  onChange={() => {
+                    updateTheme(t);
+                  }}
                 />
               </li>
             ))}
           </ul>
         </div>
-        <button onClick={resetCharts} className="btn btn-ghost btn-circle tooltip tooltip-left flex items-center justify-center" data-tip="Reset Charts">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+        <button
+          onClick={resetCharts}
+          className="btn btn-ghost btn-circle tooltip tooltip-left flex items-center justify-center"
+          data-tip="Reset Charts"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+            />
           </svg>
         </button>
-        <button onClick={resetLocalStorage} className="btn btn-ghost btn-circle tooltip tooltip-left flex items-center justify-center" data-tip="Reset Everything">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="red" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        <button
+          onClick={resetLocalStorage}
+          className="btn btn-ghost btn-circle tooltip tooltip-left flex items-center justify-center"
+          data-tip="Reset Everything"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="red"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+            />
           </svg>
         </button>
       </div>

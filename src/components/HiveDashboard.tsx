@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import MinerStatus from "./MinerStatus";
@@ -8,6 +8,7 @@ import AddMinerForm from "./AddMinerForm";
 import { useHiveData } from "@/hooks/useHiveData";
 import { parseDifficulty } from "@/utils/helpers";
 import MinerTable from "./MinerTable";
+import { useFetchContext } from "../context/FetchContext";
 
 // Memoize the MinerStatus component
 const MemoizedMinerStatus = React.memo(MinerStatus);
@@ -16,16 +17,19 @@ const HiveDashboard: React.FC = () => {
   const { hiveData, updateHiveData } = useHiveData();
   const queryClient = useQueryClient();
   const currentError = useRef(false);
+  const { setLastFetchTime, currentlyFetching } = useFetchContext();
 
   const statusQueries = useQueries({
     queries: hiveData.map((ip) => ({
       queryKey: ["allStatus", ip],
       queryFn: () => api.getAllStatus(`http://${ip}/api`),
-      refetchInterval: 10000,
     })),
   });
 
-  const { combinedData, devicesWithData } = useMemo(() => {
+  const [combinedData, setCombinedData] = useState<any>(null);
+  const [devicesWithData, setDevicesWithData] = useState(0);
+
+  const calculateCombinedData = () => {
     const allSettled = statusQueries.every((query: any) => !query.isFetching);
     const anyError = statusQueries.some((query: any) => query.isError);
 
@@ -33,7 +37,7 @@ const HiveDashboard: React.FC = () => {
       currentError.current = true;
     } else if (allSettled) {
       currentError.current = false;
-    }
+    } 
 
     const combined = statusQueries.reduce(
       (acc: any, query: any) => {
@@ -96,8 +100,21 @@ const HiveDashboard: React.FC = () => {
       (query: any) => query.data
     ).length;
 
-    return { combinedData: combined, devicesWithData };
-  }, [statusQueries, hiveData]);
+    setCombinedData(combined);
+    setDevicesWithData(devicesWithData);
+  };
+
+  // useEffect so we only update the combined data when the statusQueries were being fetched but now settled
+  useEffect(() => {
+    const allSettled = statusQueries.every((query: any) => !query.isFetching);
+    
+   if (allSettled && currentlyFetching.current) {
+      currentlyFetching.current = false;
+      setLastFetchTime(Date.now());
+      calculateCombinedData();
+    }
+
+  }, [statusQueries]);
 
   const [visibleColumns, setVisibleColumns] = useState({
     ip: true,
@@ -187,7 +204,7 @@ const HiveDashboard: React.FC = () => {
               bestDiff: combinedData.bestDiff,
               bestSessionDiff: combinedData.bestSessionDiff,
             }}
-            ready={statusQueries.every((query: any) => !query.isFetching)}
+            ready={currentlyFetching.current == false}
           />
         </div>
       ) : hiveData.length === 0 ? (
@@ -243,7 +260,7 @@ const HiveDashboard: React.FC = () => {
       <div className="mt-4">
         <AddMinerForm onSubmit={addMiner} />
       </div>
-      <div className="toast toast-top toast-end">
+      <div className="toast toast-top toast-start">
         {toasts.map((toast, index) => (
           <div
             key={index}

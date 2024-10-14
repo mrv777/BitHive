@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
+import { FetchProvider } from "@/context/FetchContext";
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -10,15 +11,16 @@ export default function Providers({ children }: { children: ReactNode }) {
         refetchOnWindowFocus: false,
         refetchOnMount: true,
         refetchOnReconnect: false,
-        retry: 1,
-        staleTime: 10 * 1000, // 10 seconds
+        retry: 0,
       },
     },
   }));
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <FetchProvider>
+        {children}
+      </FetchProvider>
     </QueryClientProvider>
   );
 }
