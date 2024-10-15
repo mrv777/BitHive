@@ -7,7 +7,7 @@ const Home: NextPage = () => {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="p-4">
+      <main className="p-4 flex-grow">
         <HiveDashboard />
       </main>
     </div>

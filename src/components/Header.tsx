@@ -43,8 +43,7 @@ const themes = [
 
 const Header: React.FC = () => {
   const queryClient = useQueryClient();
-  const { lastFetchTime, currentlyFetching, refreshInterval } =
-    useFetchContext();
+  const { lastFetchTime, currentlyFetching, refreshInterval } = useFetchContext();
   const [theme, setTheme] = useState<string>("dark");
   const [progress, setProgress] = useState(0);
 
@@ -53,6 +52,9 @@ const Header: React.FC = () => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) {
       setTheme(storedTheme);
+      document.documentElement.setAttribute("data-theme", storedTheme);
+    } else {
+      document.documentElement.setAttribute("data-theme", theme);
     }
   }, []);
 
@@ -81,10 +83,10 @@ const Header: React.FC = () => {
     };
   }, [lastFetchTime, refreshInterval]);
 
-  const updateTheme = (theme: string) => {
-    setTheme(theme);
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+  const updateTheme = (selectedTheme: string) => {
+    setTheme(selectedTheme);
+    document.documentElement.setAttribute("data-theme", selectedTheme);
+    localStorage.setItem("theme", selectedTheme);
   };
 
   const resetCharts = () => {

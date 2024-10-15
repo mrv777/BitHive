@@ -18,7 +18,10 @@ export const FetchProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const storedRefreshInterval = localStorage.getItem("refreshInterval");
     if (storedRefreshInterval) {
-      setRefreshInterval(parseInt(storedRefreshInterval, 10));
+      const parsedInterval = parseInt(storedRefreshInterval, 10);
+      if (!isNaN(parsedInterval) && parsedInterval >= 1000) { // Minimum 1 second
+        setRefreshInterval(parsedInterval);
+      }
     }
   }, []);
 
