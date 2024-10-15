@@ -1,19 +1,29 @@
-import React, { createContext, useState, useContext, useRef } from 'react';
+import React, { createContext, useState, useContext, useRef, useEffect } from 'react';
 
 interface FetchContextType {
   lastFetchTime: number;
   setLastFetchTime: (time: number) => void;
   currentlyFetching: React.MutableRefObject<boolean>;
+  refreshInterval: number;
+  setRefreshInterval: (interval: number) => void;
 }
 
 const FetchContext = createContext<FetchContextType | undefined>(undefined);
 
 export const FetchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lastFetchTime, setLastFetchTime] = useState(Date.now());
+  const [refreshInterval, setRefreshInterval] = useState(6000); // 6 seconds default
   const currentlyFetching = useRef(false);
 
+  useEffect(() => {
+    const storedRefreshInterval = localStorage.getItem("refreshInterval");
+    if (storedRefreshInterval) {
+      setRefreshInterval(parseInt(storedRefreshInterval, 10));
+    }
+  }, []);
+
   return (
-    <FetchContext.Provider value={{ lastFetchTime, setLastFetchTime, currentlyFetching }}>
+    <FetchContext.Provider value={{ lastFetchTime, setLastFetchTime, currentlyFetching, refreshInterval, setRefreshInterval }}>
       {children}
     </FetchContext.Provider>
   );

@@ -9,6 +9,7 @@ import { useHiveData } from "@/hooks/useHiveData";
 import { parseDifficulty } from "@/utils/helpers";
 import MinerTable from "./MinerTable";
 import { useFetchContext } from "../context/FetchContext";
+import Settings from "./Settings";
 
 // Memoize the MinerStatus component
 const MemoizedMinerStatus = React.memo(MinerStatus);
@@ -37,7 +38,7 @@ const HiveDashboard: React.FC = () => {
       currentError.current = true;
     } else if (allSettled) {
       currentError.current = false;
-    } 
+    }
 
     const combined = statusQueries.reduce(
       (acc: any, query: any) => {
@@ -107,13 +108,12 @@ const HiveDashboard: React.FC = () => {
   // useEffect so we only update the combined data when the statusQueries were being fetched but now settled
   useEffect(() => {
     const allSettled = statusQueries.every((query: any) => !query.isFetching);
-    
-   if (allSettled && currentlyFetching.current) {
+
+    if (allSettled && currentlyFetching.current) {
       currentlyFetching.current = false;
       setLastFetchTime(Date.now());
       calculateCombinedData();
     }
-
   }, [statusQueries]);
 
   const [visibleColumns, setVisibleColumns] = useState({
@@ -216,36 +216,36 @@ const HiveDashboard: React.FC = () => {
         </div>
       )}
       <div className="flex mt-2 gap-2">
-      <div className="flex justify-start">
-        <div className="dropdown mb-4">
-          <label tabIndex={0} className="btn m-1">
-            Select Columns
-          </label>
-          <ul
-            tabIndex={0}
-            className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
-          >
-            {Object.entries(visibleColumns).map(([column, isVisible]) => (
-              <li key={column}>
-                {column !== 'actions' ? (
-                  <label className="label cursor-pointer">
-                    <span className="label-text capitalize">{column}</span>
-                    <input
-                      type="checkbox"
-                      checked={isVisible}
-                      onChange={() => {
-                        toggleColumn(column as keyof typeof visibleColumns);
-                      }}
-                      className="checkbox"
-                    />
-                  </label>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+        <div className="flex justify-start">
+          <div className="dropdown mb-4">
+            <label tabIndex={0} className="btn m-1">
+              Select Columns
+            </label>
+            <ul
+              tabIndex={0}
+              className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+            >
+              {Object.entries(visibleColumns).map(([column, isVisible]) => (
+                <li key={column}>
+                  {column !== "actions" ? (
+                    <label className="label cursor-pointer">
+                      <span className="label-text capitalize">{column}</span>
+                      <input
+                        type="checkbox"
+                        checked={isVisible}
+                        onChange={() => {
+                          toggleColumn(column as keyof typeof visibleColumns);
+                        }}
+                        className="checkbox"
+                      />
+                    </label>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
-      <div className="divider flex-grow" />
+        <div className="divider flex-grow" />
       </div>
 
       <MinerTable
@@ -264,13 +264,23 @@ const HiveDashboard: React.FC = () => {
           <div
             key={index}
             className={`alert ${
-              toast.type === 'success' ? 'alert-success' : 'alert-error'
+              toast.type === "success" ? "alert-success" : "alert-error"
             }`}
           >
             <span>{toast.message}</span>
           </div>
         ))}
       </div>
+
+      {/* Settings Modal */}
+      <dialog
+        id="settings-modal"
+        className="modal modal-bottom sm:modal-middle"
+      >
+        <div className="modal-box">
+          <Settings showToast={showToast} />
+        </div>
+      </dialog>
     </div>
   );
 };

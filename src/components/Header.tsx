@@ -43,11 +43,10 @@ const themes = [
 
 const Header: React.FC = () => {
   const queryClient = useQueryClient();
-  const { lastFetchTime, currentlyFetching } =
+  const { lastFetchTime, currentlyFetching, refreshInterval } =
     useFetchContext();
   const [theme, setTheme] = useState<string>("dark");
   const [progress, setProgress] = useState(0);
-  const refetchInterval = 10000; // 10 seconds
 
   useEffect(() => {
     // Load theme from localStorage on initial render
@@ -60,29 +59,27 @@ const Header: React.FC = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       const elapsedTime = Date.now() - lastFetchTime;
-      const rawRemainingTime = refetchInterval - elapsedTime;
+      const rawRemainingTime = refreshInterval - elapsedTime;
       const remainingTime = Math.max(0, rawRemainingTime);
-      setProgress(((refetchInterval - remainingTime) / refetchInterval) * 100);
+      setProgress(((refreshInterval - remainingTime) / refreshInterval) * 100);
       if (
-        // if the remaining time is less than 100ms or less than -10000ms, invalidate the queries
-        // this is a bandaid fix to prevent extra renders while having a fallback if really long
         ((rawRemainingTime > 0 && rawRemainingTime <= 100) ||
-          rawRemainingTime < -10000) &&
+          rawRemainingTime < -2000) &&
         !queryClient.isFetching() &&
         !currentlyFetching.current
       ) {
         currentlyFetching.current = true;
         queryClient.invalidateQueries().catch((error: unknown) => {
           console.error("Failed to invalidate queries:", error);
-          currentlyFetching.current = false; // Reset the fetching state on error
+          currentlyFetching.current = false;
         });
       }
-    }, 100); // Update frequently for smoother animation
+    }, 100);
 
     return () => {
       clearInterval(timer);
     };
-  }, [lastFetchTime]);
+  }, [lastFetchTime, refreshInterval]);
 
   const updateTheme = (theme: string) => {
     setTheme(theme);
@@ -132,7 +129,9 @@ const Header: React.FC = () => {
               } as React.CSSProperties
             }
           >
-            {Math.ceil((100 - progress) / 10)}
+            {Math.ceil(
+              (refreshInterval - (progress / 100) * refreshInterval) / 1000
+            )}
           </div>
         </div>
         {/* <div className="tooltip tooltip-bottom" data-tip={`Connected as ${networkStatus.hostname} on ${networkStatus.ssid}`}>
@@ -142,27 +141,8 @@ const Header: React.FC = () => {
             </svg>
           </div>
         </div>
-        <button onClick={() => onSettingsClick('settings')} className="btn btn-ghost btn-circle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </button> */}
+         */}
+
         <div className="dropdown dropdown-end">
           <label tabIndex={0} className="btn m-1">
             Theme
@@ -214,6 +194,34 @@ const Header: React.FC = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+            />
+          </svg>
+        </button>
+        <button
+          onClick={() =>
+            { (
+              document.getElementById("settings-modal") as HTMLDialogElement
+            ).showModal(); }
+          }
+          className="btn btn-ghost btn-circle"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
         </button>
